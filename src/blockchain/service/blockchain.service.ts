@@ -1,6 +1,8 @@
+import { AlertPricingDto } from '../model/blockchain.dto';
+import { AlertPricingResponse, HourlyPriceData, SwapRateResponse } from '../types/priceAlert';
+
 export abstract class BlockchainService {
-  abstract testingDb(): Promise<any>;
-  abstract getEth(): Promise<any>;
-  abstract getHourlyPrices(): Promise<any>;
-  abstract swapRate(number: number): Promise<any>;
+  abstract getHourlyPrices(): Promise<HourlyPriceData[]>;
+  abstract swapRate(number: number): Promise<SwapRateResponse>;
+  abstract alertPricing(data: AlertPricingDto): Promise<AlertPricingResponse>;
 }

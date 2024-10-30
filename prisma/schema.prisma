@@ -26,3 +26,14 @@ model TokenPrice {
   
   @@map("token_prices")
 }
+
+model PriceAlert {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chain          String
+  target_pricing Decimal
+  email          String
+  isTriggered    Boolean  @default(false) 
+  timestamp      DateTime @db.Timestamp(6)
+  
+  @@map("price_alerts")
+}

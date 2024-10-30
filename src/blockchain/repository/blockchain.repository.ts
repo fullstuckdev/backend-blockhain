@@ -1,6 +1,14 @@
+import {
+  AlertPricingResponse,
+  HourlyPriceData,
+  SwapRateResponse,
+} from '../types/priceAlert';
 export abstract class BlockchainRepository {
-  abstract testingDb(): Promise<any>;
-  abstract getEth(): Promise<any>;
-  abstract getHourlyPrices(): Promise<any>;
-  abstract getSwapRate(number: number): Promise<any>;
+  abstract getHourlyPrices(): Promise<HourlyPriceData[]>;
+  abstract getSwapRate(number: number): Promise<SwapRateResponse>;
+  abstract setPriceAlert(
+    chain: string,
+    targetPrice: number,
+    email: string,
+  ): Promise<void>;
 }
