@@ -16,4 +16,9 @@ export class BlockchainController {
   async eth(): Promise<any> {
     return await this.service.getEth();
   }
+
+  @Get('/get-hourly')
+  async getHour(): Promise<any> {
+    return await this.service.getHourlyPrices();
+  }
 }

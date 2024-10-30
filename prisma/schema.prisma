@@ -17,3 +17,12 @@ model Testing {
   id                                                   String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                                                 String
 }
+
+model TokenPrice {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  timestamp   DateTime @db.Timestamp(6)
+  eth_price   Decimal
+  matic_price Decimal
+  
+  @@map("token_prices")
+}

@@ -23,4 +23,13 @@ export class BlockchainServiceImpl implements BlockchainService {
       console.log(error);
     }
   }
+
+  async getHourlyPrices(): Promise<any> {
+    try {
+      const dataTesting = await this.repositoryBlockchain.getHourlyPrices();
+      return dataTesting;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
