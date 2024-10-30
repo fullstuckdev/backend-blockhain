@@ -110,10 +110,16 @@ export class BlockchainRepositoryImpl implements BlockchainRepository {
         },
       });
 
+      if (prices.length === 0) {
+        return [];
+      }
+
       const hourlyPrices = groupPricesByHour(prices);
       return hourlyPrices.map((price) => ({
         ...price,
         timestamp: price.timestamp.toISOString(),
+        ethPrice: Number(price.ethPrice.toFixed(8)),
+        maticPrice: Number(price.maticPrice.toFixed(8)),
       }));
     } catch (error) {
       console.error('Error fetching hourly prices:', error);
@@ -127,30 +133,24 @@ export class BlockchainRepositoryImpl implements BlockchainRepository {
     targetPrice: number,
     email: string,
   ): Promise<void> {
-    // Add email format validation using regex
+    // Email validation (using only the regex approach)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       throw new Error('Invalid email format');
     }
 
-    // Add maximum price validation
-    const MAX_PRICE = 1000000; // Adjust as needed
-    if (targetPrice > MAX_PRICE) {
-      throw new Error(`Target price cannot exceed ${MAX_PRICE}`);
+    // Price validations
+    const MAX_PRICE = 1000000;
+    if (targetPrice <= 0 || targetPrice > MAX_PRICE) {
+      throw new Error(`Target price must be between 0 and ${MAX_PRICE}`);
     }
 
-    // Validate inputs
+    // Chain validation
     if (!['eth', 'matic'].includes(chain.toLowerCase())) {
       throw new Error('Invalid chain. Must be "eth" or "matic"');
     }
-    if (targetPrice <= 0) {
-      throw new Error('Target price must be greater than 0');
-    }
-    if (!email || !email.includes('@')) {
-      throw new Error('Invalid email address');
-    }
 
-    // Store alert in database using your AlertEmail model
+    // Store alert in database
     await this.prisma.priceAlert.create({
       data: {
         chain: chain.toLowerCase(),
@@ -164,32 +164,42 @@ export class BlockchainRepositoryImpl implements BlockchainRepository {
 
   // 4. API - swap rate calculation (parameters are eth amount)
   async getSwapRate(ethAmount: number): Promise<SwapRateResponse> {
+    // Input validation
+    if (ethAmount <= 0) {
+      throw new Error('ETH amount must be greater than 0');
+    }
+
     await this.initializeMoralis();
 
-    const [ethPrice, btcPrice] = await Promise.all([
-      Moralis.EvmApi.token.getTokenPrice({
-        address: process.env.ETH_CONTRACT_ADDRESS,
-        chain: process.env.CHAIN_MORALIS_ETH,
-      }),
-      Moralis.EvmApi.token.getTokenPrice({
-        address: process.env.BTC_CONTRACT_ADDRESS,
-        chain: process.env.CHAIN_MORALIS_ETH,
-      }),
-    ]);
+    try {
+      const [ethPrice, btcPrice] = await Promise.all([
+        Moralis.EvmApi.token.getTokenPrice({
+          address: process.env.ETH_CONTRACT_ADDRESS,
+          chain: process.env.CHAIN_MORALIS_ETH,
+        }),
+        Moralis.EvmApi.token.getTokenPrice({
+          address: process.env.BTC_CONTRACT_ADDRESS,
+          chain: process.env.CHAIN_MORALIS_ETH,
+        }),
+      ]);
 
-    const ethValue = ethAmount * ethPrice.raw.usdPrice;
-    const btcAmount = ethValue / btcPrice.raw.usdPrice;
+      const ethValue = ethAmount * ethPrice.raw.usdPrice;
+      const btcAmount = ethValue / btcPrice.raw.usdPrice;
 
-    const feePercentage = 0.03;
-    const feeInEth = ethAmount * feePercentage;
-    const feeInUsd = feeInEth * ethPrice.raw.usdPrice;
+      const feePercentage = 0.03; // 3% fee
+      const feeInEth = ethAmount * feePercentage;
+      const feeInUsd = feeInEth * ethPrice.raw.usdPrice;
 
-    return {
-      btcAmount,
-      fee: {
-        eth: feeInEth,
-        usd: feeInUsd,
-      },
-    };
+      return {
+        btcAmount: Number(btcAmount.toFixed(8)),
+        fee: {
+          eth: Number(feeInEth.toFixed(18)),
+          usd: Number(feeInUsd.toFixed(2)),
+        },
+      };
+    } catch (error) {
+      console.error('Error calculating swap rate:', error);
+      throw new Error('Failed to calculate swap rate');
+    }
   }
 }

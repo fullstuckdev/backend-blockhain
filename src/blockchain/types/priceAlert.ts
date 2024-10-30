@@ -1,9 +1,14 @@
 import { Prisma } from '@prisma/client';
 
 export interface PriceAlert {
-  chain: string;
+  chain: ChainType;
   targetPrice: number;
   email: string;
+}
+
+export enum ChainType {
+  ETH = 'eth',
+  MATIC = 'matic'
 }
 
 export type TokenPrice = {

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNumber, IsString } from 'class-validator';
+import { IsEmail, IsNumber, IsEnum, Min } from 'class-validator';
+import { ChainType } from '../types/priceAlert';
 
 export class SwapRateDto {
   @ApiProperty({
@@ -13,16 +14,19 @@ export class SwapRateDto {
 export class AlertPricingDto {
   @ApiProperty({
     description: 'The blockchain/cryptocurrency to monitor',
-    example: 'ethereum',
-    enum: ['ethereum', 'matic'],
+    example: ChainType.ETH,
+    enum: ChainType,
   })
-  chain: string;
+  @IsEnum(ChainType, { message: 'Chain must be either "eth" or "matic"' })
+  chain: ChainType;
 
   @ApiProperty({
     description: 'Target price in USD that will trigger the alert',
     example: 1000,
     minimum: 0,
   })
+  @IsNumber()
+  @Min(0)
   dollar: number;
 
   @ApiProperty({
@@ -30,5 +34,6 @@ export class AlertPricingDto {
     example: 'user@example.com',
     format: 'email',
   })
+  @IsEmail()
   email: string;
 }

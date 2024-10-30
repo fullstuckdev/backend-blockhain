@@ -1,5 +1,5 @@
 import * as moment from 'moment';
-import { TokenPrice, HourlyPrice } from '../types/priceAlert';
+import { TokenPrice, HourlyPrice, ChainType } from '../types/priceAlert';
 import { PrismaClient } from 'prisma';
 import * as nodemailer from 'nodemailer';
 import { PriceAlert } from '../types/priceAlert';
@@ -40,32 +40,45 @@ export class BlockchainPriceMonitor {
 
   // Feature 2: Check hourly price change and send email if > 3%
   public async checkHourlyPriceChange(): Promise<void> {
-    const oneHourAgo = new Date(Date.now() - 3600000);
+    try {
+      const oneHourAgo = new Date(Date.now() - 3600000);
 
-    const [currentPrices, oldPrices] = await Promise.all([
-      this.prisma.tokenPrice.findFirst({
-        orderBy: { timestamp: 'desc' },
-      }),
-      this.prisma.tokenPrice.findFirst({
-        where: { timestamp: { lte: oneHourAgo } },
-        orderBy: { timestamp: 'desc' },
-      }),
-    ]);
+      const [currentPrices, oldPrices] = await Promise.all([
+        this.prisma.tokenPrice.findFirst({
+          orderBy: { timestamp: 'desc' },
+        }),
+        this.prisma.tokenPrice.findFirst({
+          where: { timestamp: { lte: oneHourAgo } },
+          orderBy: { timestamp: 'desc' },
+        }),
+      ]);
 
-    if (!currentPrices || !oldPrices) return;
+      if (!currentPrices || !oldPrices) {
+        console.log('Insufficient price data for comparison');
+        return;
+      }
 
-    const ethChange =
-      ((Number(currentPrices.eth_price) - Number(oldPrices.eth_price)) /
-        Number(oldPrices.eth_price)) *
-      100;
-    const maticChange =
-      ((Number(currentPrices.matic_price) - Number(oldPrices.matic_price)) /
-        Number(oldPrices.matic_price)) *
-      100;
+      const ethChange = this.calculatePercentageChange(
+        Number(currentPrices.eth_price),
+        Number(oldPrices.eth_price),
+      );
 
-    if (ethChange > 3 || maticChange > 3) {
-      await this.sendPriceChangeAlert(ethChange, maticChange);
+      const maticChange = this.calculatePercentageChange(
+        Number(currentPrices.matic_price),
+        Number(oldPrices.matic_price),
+      );
+
+      // Check for both positive and negative changes exceeding 3%
+      if (Math.abs(ethChange) > 3 || Math.abs(maticChange) > 3) {
+        await this.sendPriceChangeAlert(ethChange, maticChange);
+      }
+    } catch (error) {
+      console.error('Error checking hourly price change:', error);
     }
+  }
+
+  private calculatePercentageChange(current: number, old: number): number {
+    return ((current - old) / old) * 100;
   }
 
   private async sendPriceChangeAlert(
@@ -106,20 +119,18 @@ export class BlockchainPriceMonitor {
     ethPrice: number,
     maticPrice: number,
   ): Promise<void> {
-    // Add price validation
     if (ethPrice <= 0 || maticPrice <= 0) {
       throw new Error('Invalid price values');
     }
 
-    // Get active alerts from database
     const activeAlerts = await this.prisma.priceAlert.findMany({
       where: { isTriggered: false },
     });
 
     for (const alert of activeAlerts) {
-      const currentPrice = alert.chain === 'eth' ? ethPrice : maticPrice;
+      const currentPrice =
+        alert.chain === ChainType.ETH ? ethPrice : maticPrice;
 
-      // Use percentage threshold (e.g., within 1% of target)
       const threshold = Number(alert.target_pricing) * 0.01;
       if (Math.abs(currentPrice - Number(alert.target_pricing)) <= threshold) {
         await this.sendPriceAlert(
@@ -131,7 +142,6 @@ export class BlockchainPriceMonitor {
           currentPrice,
         );
 
-        // Mark alert as triggered in database
         await this.prisma.priceAlert.update({
           where: { id: alert.id },
           data: { isTriggered: true },

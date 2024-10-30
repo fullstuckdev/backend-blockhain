@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgres:5432/blockchain_db
+      - SMTP_USER=${SMTP_USER}
+      - PROD_REC=${PROD_REC}
+      - ETH_CONTRACT_ADDRESS=${ETH_CONTRACT_ADDRESS}
+      - BTC_CONTRACT_ADDRESS=${BTC_CONTRACT_ADDRESS}
+      - POLY_CONTRACT_ADDRESS=${POLY_CONTRACT_ADDRESS}
+      - CHAIN_MORALIS_ETH=${CHAIN_MORALIS_ETH}
+      - CHAIN_MORALIS_POLYGON=${CHAIN_MORALIS_POLYGON}
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=blockchain_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data: 

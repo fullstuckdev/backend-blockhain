@@ -6,6 +6,7 @@ import {
   AlertPricingResponse,
   HourlyPriceData,
   SwapRateResponse,
+  ChainType,
 } from '../types/priceAlert';
 
 @ApiTags('Blockchain Api')
@@ -119,7 +120,15 @@ export class BlockchainController {
       ethereum_alert: {
         summary: 'Ethereum Price Alert',
         value: {
-          chain: 'ethereum',
+          chain: ChainType.ETH,
+          dollar: 1000,
+          email: 'user@example.com',
+        },
+      },
+      matic_alert: {
+        summary: 'Matic Price Alert',
+        value: {
+          chain: ChainType.MATIC,
           dollar: 1000,
           email: 'user@example.com',
         },
