@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BlockchainService } from '../service/blockchain.service';
+import { swapRateDto } from '../model/blockchain.dto';
 
 @ApiTags('Blockchain Api')
 @Controller('/api/v1/blockchain')
@@ -23,7 +24,7 @@ export class BlockchainController {
   }
 
   @Get('/swap-rate')
-  async swapRate(@Body() number: number): Promise<any> {
-    return await this.service.swapRate(number);
+  async swapRate(@Body() data: swapRateDto): Promise<any> {
+    return await this.service.swapRate(data.number);
   }
 }

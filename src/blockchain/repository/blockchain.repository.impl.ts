@@ -48,20 +48,20 @@ export class BlockchainRepositoryImpl implements BlockchainRepository {
   }
 
   // Feature 1: Save prices every 5 minutes
-  @Cron('*/5 * * * *')
+  @Cron('*/5 * * * * *') 
   async savePrices(): Promise<void> {
     await this.initializeMoralis();
 
     try {
       // Get ETH price
       const ethResponse = await Moralis.EvmApi.token.getTokenPrice({
-        address: process.env.ADDRESS_MORALIS,
+        address: process.env.TESTING_ETH,
         chain: process.env.CHAIN_MORALIS_ETH,
       });
 
-      // Get MATIC price
+      // Get POLYGON price
       const maticResponse = await Moralis.EvmApi.token.getTokenPrice({
-        address: process.env.ADDRESS_MORALIS,
+        address: process.env.TESTING_POLY,
         chain: process.env.CHAIN_MORALIS_POLYGON,
       });
 
@@ -74,13 +74,15 @@ export class BlockchainRepositoryImpl implements BlockchainRepository {
         },
       });
 
-      // Check price alerts
+      console.log("saving process")
+
+      // // Check price alerts
       await this.checkPriceAlerts(
         ethResponse.raw.usdPrice,
         maticResponse.raw.usdPrice,
       );
 
-      // Check hour price change
+      // // Check hour price change
       await this.checkHourlyPriceChange();
     } catch (error) {
       console.error('Error saving prices:', error);
@@ -225,7 +227,7 @@ export class BlockchainRepositoryImpl implements BlockchainRepository {
 
     const [ethPrice, btcPrice] = await Promise.all([
       Moralis.EvmApi.token.getTokenPrice({
-        address: process.env.ETH_CONTRACT_ADDRESS,
+        address: process.env.TESTING_ETH,
         chain: process.env.CHAIN_MORALIS_ETH,
       }),
       Moralis.EvmApi.token.getTokenPrice({
