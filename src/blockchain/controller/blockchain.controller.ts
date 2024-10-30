@@ -1,4 +1,4 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Body, Controller, Get, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BlockchainService } from '../service/blockchain.service';
 
@@ -20,5 +20,10 @@ export class BlockchainController {
   @Get('/get-hourly')
   async getHour(): Promise<any> {
     return await this.service.getHourlyPrices();
+  }
+
+  @Get('/swap-rate')
+  async swapRate(@Body() number: number): Promise<any> {
+    return await this.service.swapRate(number);
   }
 }

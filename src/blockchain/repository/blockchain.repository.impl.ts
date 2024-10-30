@@ -5,6 +5,8 @@ import Moralis from 'moralis';
 import { initializeMoralis } from 'src/config/moralis/moralis';
 import * as nodemailer from 'nodemailer';
 import { Cron } from '@nestjs/schedule';
+import * as moment from 'moment';
+
 interface PriceAlert {
   chain: string;
   targetPrice: number;
@@ -152,20 +154,22 @@ export class BlockchainRepositoryImpl implements BlockchainRepository {
     const hourlyGroups = new Map();
 
     prices.forEach((price) => {
-      const hourKey = new Date(price.timestamp).setMinutes(0, 0, 0);
+      const hourKey = moment(price.timestamp).startOf('hour').toISOString();
+
       if (!hourlyGroups.has(hourKey)) {
         hourlyGroups.set(hourKey, {
-          timestamp: new Date(hourKey),
-          ethPrice: price.ethPrice,
-          maticPrice: price.maticPrice,
+          timestamp: moment(hourKey).toDate(),
+          ethPrice: parseFloat(price.eth_price),
+          maticPrice: parseFloat(price.matic_price),
           count: 1,
         });
       } else {
         const group = hourlyGroups.get(hourKey);
         group.ethPrice =
-          (group.ethPrice * group.count + price.ethPrice) / (group.count + 1);
+          (group.ethPrice * group.count + parseFloat(price.eth_price)) /
+          (group.count + 1);
         group.maticPrice =
-          (group.maticPrice * group.count + price.maticPrice) /
+          (group.maticPrice * group.count + parseFloat(price.matic_price)) /
           (group.count + 1);
         group.count++;
       }
@@ -222,11 +226,11 @@ export class BlockchainRepositoryImpl implements BlockchainRepository {
     const [ethPrice, btcPrice] = await Promise.all([
       Moralis.EvmApi.token.getTokenPrice({
         address: process.env.ETH_CONTRACT_ADDRESS,
-        chain: process.env.CHAIN_MORALIS,
+        chain: process.env.CHAIN_MORALIS_ETH,
       }),
       Moralis.EvmApi.token.getTokenPrice({
         address: process.env.BTC_CONTRACT_ADDRESS,
-        chain: process.env.CHAIN_MORALIS,
+        chain: process.env.CHAIN_MORALIS_ETH,
       }),
     ]);
 
@@ -249,24 +253,25 @@ export class BlockchainRepositoryImpl implements BlockchainRepository {
   async getEth(): Promise<any> {
     await this.initializeMoralis();
 
-    // const response = await Moralis.EvmApi.wallets.getWalletTokenBalancesPrice({
-    //   chain: process.env.CHAIN_MORALIS,
-    //   address: process.env.ADDRESS_MORALIS,
-    // });
-
     // Get ETH price
-    const response = await Moralis.EvmApi.token.getTokenPrice({
-      chain: process.env.CHAIN_MORALIS_ETH,
-      address: process.env.ETH_CONTRACT_ADDRESS
-    });
+    // const response = await Moralis.EvmApi.token.getTokenPrice({
+    //   chain: process.env.CHAIN_MORALIS_ETH,
+    //   address: process.env.ETH_CONTRACT_ADDRESS,
+    // });
 
     // Get MATIC price
     // const maticResponse = await Moralis.EvmApi.token.getTokenPrice({
-    //   address: process.env.ADDRESS_MORALIS,
+    //   address: process.env.POLYGON_CONTRACT_ADDRESS,
     //   chain: process.env.CHAIN_MORALIS_POLYGON,
     // });
 
-    return response;
+    // BTC
+    const BtcResponse = await Moralis.EvmApi.token.getTokenPrice({
+      chain: process.env.CHAIN_MORALIS_ETH,
+      address: process.env.BTC_CONTRACT_ADDRESS,
+    });
+
+    return { BtcResponse };
   }
 
   async testingDb(): Promise<any> {

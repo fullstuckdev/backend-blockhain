@@ -32,4 +32,13 @@ export class BlockchainServiceImpl implements BlockchainService {
       console.log(error);
     }
   }
+
+  async swapRate(number: number): Promise<any> {
+    try {
+      const dataTesting = await this.repositoryBlockchain.getSwapRate(number);
+      return dataTesting;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
