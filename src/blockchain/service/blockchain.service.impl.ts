@@ -14,4 +14,13 @@ export class BlockchainServiceImpl implements BlockchainService {
       console.log(error);
     }
   }
+
+  async getEth(): Promise<any> {
+    try {
+      const dataTesting = await this.repositoryBlockchain.getEth();
+      return dataTesting;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

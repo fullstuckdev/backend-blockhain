@@ -11,4 +11,9 @@ export class BlockchainController {
   async testingData(): Promise<any> {
     return await this.service.testingDb();
   }
+
+  @Get('/eth')
+  async eth(): Promise<any> {
+    return await this.service.getEth();
+  }
 }
