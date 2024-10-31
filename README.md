@@ -71,6 +71,9 @@ docker compose down -v
 
 ## 🔌 API Endpoints
 
+### Documentation
+- `GET /documentation` - Access Swagger API documentation UI
+
 ### Price Monitoring
 - `GET /prices/hourly` - Get hourly price history (24h)
 - `GET /prices/current` - Get current prices
