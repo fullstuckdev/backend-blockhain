@@ -42,7 +42,7 @@ DATABASE_URL=postgresql://user:password@postgres:5432/blockchain_db
 
 # Email Configuration
 SMTP_USER=your_email@example.com
-PROD_REC=hyperhire_assignment@hyperhire.in
+RECIPIENT=hyperhire_assignment@hyperhire.in
 
 # Blockchain Configuration
 ETH_CONTRACT_ADDRESS=your_eth_contract

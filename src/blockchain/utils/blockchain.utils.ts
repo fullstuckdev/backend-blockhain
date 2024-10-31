@@ -13,17 +13,17 @@ export function groupPricesByHour(prices: TokenPrice[]): HourlyPrice[] {
     if (!hourlyGroups.has(hourKey)) {
       hourlyGroups.set(hourKey, {
         timestamp: moment(hourKey).toDate(),
-        ethPrice: price.eth_price.toNumber(),
-        maticPrice: price.matic_price.toNumber(),
+        ethPrice: price.eth_price,
+        maticPrice: price.matic_price,
         count: 1,
       });
     } else {
       const group = hourlyGroups.get(hourKey)!;
       group.ethPrice =
-        (group.ethPrice * group.count + price.eth_price.toNumber()) /
+        (group.ethPrice * group.count + price.eth_price) /
         (group.count + 1);
       group.maticPrice =
-        (group.maticPrice * group.count + price.matic_price.toNumber()) /
+        (group.maticPrice * group.count + price.matic_price) /
         (group.count + 1);
       group.count++;
     }
@@ -87,7 +87,7 @@ export class BlockchainPriceMonitor {
   ): Promise<void> {
     const message = {
       from: process.env.SMTP_USER,
-      to: process.env.PROD_REC,
+      to: process.env.RECIPIENT,
       subject: '🚨 Crypto Price Alert - Significant Change Detected',
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px;">

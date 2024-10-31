@@ -6,9 +6,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://user:password@postgres:5432/blockchain_db
+      - DATABASE_URL=${DATABASE_URL}
       - SMTP_USER=${SMTP_USER}
-      - PROD_REC=${PROD_REC}
+      - RECIPIENT=${RECIPIENT}
       - ETH_CONTRACT_ADDRESS=${ETH_CONTRACT_ADDRESS}
       - BTC_CONTRACT_ADDRESS=${BTC_CONTRACT_ADDRESS}
       - POLY_CONTRACT_ADDRESS=${POLY_CONTRACT_ADDRESS}
@@ -16,20 +16,19 @@ services:
       - CHAIN_MORALIS_POLYGON=${CHAIN_MORALIS_POLYGON}
     depends_on:
       - postgres
-    volumes:
-      - .:/app
-      - /app/node_modules
+    user: "node"
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run start:prod"
 
   postgres:
     image: postgres:14-alpine
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=blockchain_db
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data: 
+  postgres_data:

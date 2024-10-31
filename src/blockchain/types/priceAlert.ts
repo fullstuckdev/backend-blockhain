@@ -1,5 +1,3 @@
-import { Prisma } from '@prisma/client';
-
 export interface PriceAlert {
   chain: ChainType;
   targetPrice: number;
@@ -14,8 +12,8 @@ export enum ChainType {
 export type TokenPrice = {
   id: string;
   timestamp: Date;
-  eth_price: Prisma.Decimal;
-  matic_price: Prisma.Decimal;
+  eth_price: number;
+  matic_price: number;
 };
 
 export interface HourlyPrice {

@@ -2,15 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Postgres } from '../../config/database/postgres';
 import { BlockchainRepository } from './blockchain.repository';
 import Moralis from 'moralis';
-import { initializeMoralis } from 'src/config/moralis/moralis';
+import { initializeMoralis } from '../../config/moralis/moralis';
 import * as nodemailer from 'nodemailer';
 import { Cron } from '@nestjs/schedule';
-import {
-  HourlyPrice,
-  HourlyPriceData,
-  SwapRate,
-  SwapRateResponse,
-} from '../types/priceAlert';
+import { HourlyPriceData, SwapRateResponse } from '../types/priceAlert';
 import { groupPricesByHour } from '../utils/blockchain.utils';
 import { BlockchainPriceMonitor } from '../utils/blockchain.utils';
 
@@ -114,7 +109,13 @@ export class BlockchainRepositoryImpl implements BlockchainRepository {
         return [];
       }
 
-      const hourlyPrices = groupPricesByHour(prices);
+      const convertedPrices = prices.map((price) => ({
+        ...price,
+        eth_price: Number(price.eth_price),
+        matic_price: Number(price.matic_price),
+      }));
+
+      const hourlyPrices = groupPricesByHour(convertedPrices);
       return hourlyPrices.map((price) => ({
         ...price,
         timestamp: price.timestamp.toISOString(),
