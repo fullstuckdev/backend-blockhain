@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { BlockchainService } from '../service/blockchain.service';
 import { AlertPricingDto, SwapRateDto } from '../model/blockchain.dto';
 import {
@@ -55,6 +55,13 @@ export class BlockchainController {
 
   @Get('/swap-rate')
   @ApiOperation({ summary: 'Get swap rate information' })
+  @ApiQuery({
+    name: 'ethAmount',
+    type: 'number',
+    description: 'Amount of ETH to swap',
+    example: 1.5,
+    required: true
+  })
   @ApiResponse({
     status: 200,
     description: 'Returns swap rate details including BTC amount and fees',
@@ -84,8 +91,8 @@ export class BlockchainController {
       },
     },
   })
-  async swapRate(@Query('number') number: number): Promise<SwapRateResponse> {
-    return await this.service.swapRate(number);
+  async swapRate(@Query('ethAmount') ethAmount: number): Promise<SwapRateResponse> {
+    return await this.service.swapRate(ethAmount);
   }
 
   @Post('/alert-pricing')

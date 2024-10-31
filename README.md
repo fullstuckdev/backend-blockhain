@@ -76,12 +76,8 @@ docker compose down -v
 - `GET /prices/current` - Get current prices
 
 ### Swap Calculator
-- `POST /swap/rate` - Calculate ETH to BTC swap rate
-  ```json
-  {
-    "ethAmount": 1.0
-  }
-  ```
+- `GET /swap-rate?number={amount}` - Calculate ETH to BTC swap rate
+  Example: `/swap-rate?ethAmount=1.0`
 
 ### Price Alerts
 - `POST /alerts` - Set price alert
