@@ -74,6 +74,9 @@ docker compose down -v
 ### Documentation
 - `GET /documentation` - Access Swagger API documentation UI
 
+<img width="1679" alt="Screen Shot 2024-10-31 at 13 02 55" src="https://github.com/user-attachments/assets/5017f017-507c-4b1c-93c4-310bb1315287">
+
+
 ### Price Monitoring
 - `GET /prices/hourly` - Get hourly price history (24h)
 - `GET /prices/current` - Get current prices
